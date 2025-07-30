@@ -40,7 +40,7 @@
 تم تدريب النماذج باستخدام مكتبة `scikit-learn` مع بيانات بيئية متنوعة. استخدمنا بيئة Google Colab لتجهيز البيانات وتشغيل التدريب.
 
 > **صورة التدريب في Google Colab**  
-> ![Training](./images/training_colab.png)
+> ![Training](https://i.ibb.co/DfnFwdhf/image.png)
 
 ### خطوات التدريب الأساسية
 
@@ -56,7 +56,7 @@
 تم تطوير API باستخدام FastAPI لاستقبال بيانات المستشعرات وتقديم التنبؤات. 
 
 > **صورة واجهة API في Postman**  
-> ![API Example](./images/api_postman.png)
+> ![API Example](https://i.ibb.co/nqGVLrQb/image.png)
 
 ### قائمة الـ Endpoints:
 
