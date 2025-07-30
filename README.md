@@ -1,4 +1,4 @@
-> ![SEDR](https://i.ibb.co/PZWj26g5/image.png)
+> ![SEDR](https://i.ibb.co/R43tm0v9/image.png)
 
 # مشروع نظام سدر | Sader System
 
