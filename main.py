@@ -1,62 +1,58 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 import joblib
-import numpy as np
+import os
 
-app = FastAPI()
+app = FastAPI(title="نظام سدر - API")
 
-# تحميل النماذج المحفوظة
-model_fire = joblib.load("model_fire.pkl")
-model_air_quality = joblib.load("model_air_quality.pkl")
-model_temperature = joblib.load("model_temperature.pkl")
-model_soil_fertility = joblib.load("model_soil_fertility.pkl")
+fertility_model = joblib.load("models/fertility_model.pkl")
+desert_model = joblib.load("models/desertification_model.pkl")
+air_model = joblib.load("models/air_quality_model.pkl")
+plant_model = joblib.load("models/suggestions_model.pkl")
 
-# ====== موديل حريق ======
-class FireInput(BaseModel):
-    temperature: float
-    humidity: float
-    wind_speed: float
-    air_quality_index: float
-
-@app.post("/predict/fire")
-def predict_fire(data: FireInput):
-    features = np.array([[data.temperature, data.humidity, data.wind_speed, data.air_quality_index]])
-    prediction = model_fire.predict(features)[0]
-    return {"fire_detected": bool(prediction)}
-
-# ====== موديل جودة الهواء ======
-class AirQualityInput(BaseModel):
-    temperature: float
-    humidity: float
-    wind_speed: float
-
-@app.post("/predict/air_quality")
-def predict_air_quality(data: AirQualityInput):
-    features = np.array([[data.temperature, data.humidity, data.wind_speed]])
-    prediction = model_air_quality.predict(features)[0]
-    return {"air_quality_index": float(prediction)}
-
-# ====== موديل درجة الحرارة ======
-class TemperatureInput(BaseModel):
-    humidity: float
-    wind_speed: float
-    air_quality_index: float
-
-@app.post("/predict/temperature")
-def predict_temperature(data: TemperatureInput):
-    features = np.array([[data.humidity, data.wind_speed, data.air_quality_index]])
-    prediction = model_temperature.predict(features)[0]
-    return {"temperature": float(prediction)}
-
-# ====== موديل خصوبة التربة ======
-class SoilFertilityInput(BaseModel):
+# --- Schemas ---
+class FertilityInput(BaseModel):
     temperature: float
     humidity: float
     soil_moisture: float
 
-@app.post("/predict/soil_fertility")
-def predict_soil_fertility(data: SoilFertilityInput):
-    features = np.array([[data.temperature, data.humidity, data.soil_moisture]])
-    prediction = model_soil_fertility.predict(features)[0]
-    return {"soil_fertility": float(prediction)}
+class DesertInput(BaseModel):
+    past_temp: float
+    past_humid: float
+    now: float
 
+class AirInput(BaseModel):
+    temperature: float
+    humidity: float
+    dust_level: float
+
+class SuggestionInput(BaseModel):
+    soil_moisture: float
+    fertility: float
+    ph: float
+    nitrogen: float
+
+# --- Endpoints ---
+@app.post("/predict/fertility")
+def predict_fertility(data: FertilityInput):
+    pred = fertility_model.predict([[data.temperature, data.humidity, data.soil_moisture]])
+    return {"fertility_percentage": round(float(pred[0]), 2)}
+
+@app.post("/predict/desertification")
+def predict_desert(data: DesertInput):
+    pred = desert_model.predict([[data.past_temp, data.past_humid, data.now]])
+    return {"future_desertification": round(float(pred[0]), 2)}
+
+@app.post("/predict/air_quality")
+def predict_air(data: AirInput):
+    pred = air_model.predict([[data.temperature, data.humidity, data.dust_level]])
+    return {"aqi_estimation": round(float(pred[0]), 2)}
+
+@app.post("/predict/agriculture_suggestion")
+def predict_agri(data: SuggestionInput):
+    plant_pred = plant_model.predict([[data.soil_moisture, data.fertility, data.ph, data.nitrogen]])[0]
+    best_days = np.random.randint(0, 180)
+    return {
+        "recommended_plant": plant_pred,
+        "days_until_best_time": best_days
+    }
